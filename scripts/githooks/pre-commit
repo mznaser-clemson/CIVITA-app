@@ -1,0 +1,17 @@
+#!/bin/sh
+# CIVITA pre-commit gate (tracked, travels with the repo).
+# Activate once per clone:  git config core.hooksPath scripts/githooks
+# (or run: sh scripts/install-hooks.sh)
+set -e
+
+# SECRET GATE (hard): no Supabase key may ever be committed. The distributed build
+# must ship with a blank config, and the service_role key must never appear in any
+# tracked file. Scans STAGED content and fails closed.
+node scripts/check-no-secrets.mjs
+
+# NOTE: the private working repo also runs a generated-artifact gate here, which
+# keeps the LaTeX manual and the in-app Help panel in sync. That gate is deliberately
+# NOT carried over: this repo ships neither the .tex source nor the generators, so the
+# check would have nothing to compare and would never fire. A hook branch that can
+# never trigger reads like protection without being any, so it is omitted rather than
+# left in place.

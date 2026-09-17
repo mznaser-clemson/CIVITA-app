@@ -1,0 +1,21 @@
+# CIVITA public distribution repo.
+#
+# This file works by EXPLICIT DENY, not by an allowlist. The private working repo
+# uses `*` + `!allowed` — which excludes the configured build only by not listing
+# it. That is a silent guard: loosen the allowlist once and a live Supabase key
+# ships. Here, the deny rules below hold no matter what else is added.
+
+# --- HARD: never publish a build with the backend config filled in ---------
+# The distributed CIVITA-v9.html must ship with CENTRAL_DB_URL and
+# CENTRAL_DB_ANON_KEY blank. The manager fills them only in a private copy.
+*-configured.html
+*configured*.html
+SUPABASE*.txt
+*.env
+.env*
+
+# --- Local noise -----------------------------------------------------------
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
