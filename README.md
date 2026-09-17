@@ -1,6 +1,4 @@
-# CIVITA v9
-
-**Computational Infrastructure for Validation, Integration, Testing, and Assessment**
+# CIVITA: Computational Infrastructure for Validation, Integration, Testing, and Assessment
 
 CIVITA is a data-entry and data-extraction workbench for experimental results reported in
 concrete-research literature, built to assemble the Concrete Grand Challenge database.
