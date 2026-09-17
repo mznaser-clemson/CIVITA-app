@@ -13,4 +13,10 @@ M.Z. Naser, Gianluca Cusatis, and Jiaqi Liu.
 
 ## Collaboration
 
-We are looking for future collaborators. If you would like to contribute, get in touch.
+We are looking for future collaborators.
+
+[**Fork this repository**](https://github.com/mznaser-clemson/CIVITA-app/fork) to start from your
+own copy, and see [CONTRIBUTING.md](CONTRIBUTING.md) for how to propose a change. To ask a
+question, report a problem or introduce yourself, open an
+[issue](https://github.com/mznaser-clemson/CIVITA-app/issues) or start a
+[discussion](https://github.com/mznaser-clemson/CIVITA-app/discussions).
