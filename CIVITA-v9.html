@@ -675,14 +675,8 @@ try {
         <span class="ml-pick">Work this way &#8594;</span>
       </span>
     </button>
-    <button type="button" class="ml-card" data-mode="llm">
-      <span class="ml-body">
-        <span class="ml-icon">&#10022;</span>
-        <span class="ml-title">AI-assisted extraction and data submission</span>
-        <span class="ml-desc">You have the papers. Upload the PDFs and the model fills the sheet for you. You still review, correct and confirm every value before it is submitted.</span>
-        <span class="ml-pick">Work this way &#8594;</span>
-      </span>
-    </button>
+    <!-- PUBLIC BUILD: the AI-assisted landing card is removed. Leaving it would throw on click,
+         because 'llm' is no longer in INPUT_MODES. -->
     <button type="button" class="ml-card" data-mode="webform">
       <span class="ml-body">
         <span class="ml-icon">&#9776;</span>
@@ -1512,7 +1506,7 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
   <span class="status-dot idle llm-only" id="statusDot"></span>
   <button id="btnContributor" title="Your contributor profile. Sets the ID prefix that namespaces all your records so groups' data merges without collisions.">⚠ Set contributor</button><span id="buildBadge" class="build-badge"></span>
   <button id="btnModality" type="button" title="The way of working you chose when CIVITA opened. Click to go back to that choice."></button>
-  <span id="modeToggle" title="Manual: type data directly into the sheet — no AI. AI-assisted: upload PDFs and let the model fill the sheet. Webform: the same data entered one record at a time through a guided form."><button id="btnModeManual" type="button">Manual</button><button id="btnModeLLM" type="button">AI-assisted</button><button id="btnModeWebform" type="button">Webform</button></span>
+  <span id="modeToggle" title="Manual: type data directly into the sheet — no AI. Webform: the same data entered one record at a time through a guided form."><button id="btnModeManual" type="button">Manual</button><button id="btnModeWebform" type="button">Webform</button></span>
   <button id="btnAddRow" title="Add a blank row to the current table for manual entry. Mints a namespaced ID — set your contributor profile first.">+ Add Row</button>
   <button id="btnLoadPdfDigitize" title="Load a PDF to hand-digitize its figures WITHOUT running AI extraction. Adds a source row and loads the PDF; then open the figures tab, Add Row, set the row's source + page, and click the digitize icon to trace curves by hand.">Load PDF (digitize only)</button>
   <button id="btnAddPdfs" class="llm-only">+ Add PDFs</button>
@@ -2071,7 +2065,8 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
 <p>CIVITA is a data-entry and data-extraction workbench for experimental results reported in concrete-research literature. It is a <em>single HTML file</em>. There is nothing to install, no server, and no build step: you double-click <code>CIVITA-v9.html</code> and it opens in your browser as a normal local page.</p>
 <p>Everything you enter is stored in a structured database of 17 tables (Appendix&nbsp;<a href="#hp-app-tables">A</a>). Thirteen of those are the canonical Concrete Grand Challenge template tables &mdash; the ones that get exported to CSV and submitted to the committee &mdash; and four are CIVITA extension tables that hold digitized curve points, fitted material models, model parameters and figure metadata.</p>
 <p>You fill that database in one of three ways, and you can switch between them at any time because all three write to exactly the same records:</p>
-<dl><dt>Manual (Section&nbsp;<a href="#hp-sec-manual">4</a>)</dt><dd>A spreadsheet-style grid. You type values into cells. No AI, no network, no API key.</dd><dt>AI-assisted (Section&nbsp;<a href="#hp-sec-llm">5</a>)</dt><dd>You stage one or more PDFs, and a large language model reads them and fills the tables for you, including reading data points off figures. Requires an API key and costs money per paper.</dd><dt>Webform (Section&nbsp;<a href="#hp-sec-webform">6</a>)</dt><dd>One card per record, with labelled fields, drop-downs for controlled terms, and drop-downs that let you pick a parent record by name instead of by ID. Best for careful entry of a small number of records, and for people who find the wide grid hard to read.</dd></dl>
+<p><strong>Note for this build:</strong> AI-assisted mode is not available. This copy of CIVITA ships with that mode disabled, so anywhere the manual below describes AI-assisted extraction, model choices, API keys or batch jobs, it describes a mode this build does not offer. Manual and Webform entry are unaffected and need no key and no network.</p>
+<dl><dt>Manual (Section&nbsp;<a href="#hp-sec-manual">4</a>)</dt><dd>A spreadsheet-style grid. You type values into cells. No AI, no network, no API key.</dd><dt>AI-assisted (Section&nbsp;<a href="#hp-sec-llm">5</a>) &mdash; not available in this build</dt><dd>You stage one or more PDFs, and a large language model reads them and fills the tables for you, including reading data points off figures. Requires an API key and costs money per paper.</dd><dt>Webform (Section&nbsp;<a href="#hp-sec-webform">6</a>)</dt><dd>One card per record, with labelled fields, drop-downs for controlled terms, and drop-downs that let you pick a parent record by name instead of by ID. Best for careful entry of a small number of records, and for people who find the wide grid hard to read.</dd></dl>
 <h3 id="hp-xs53"><span class="hp-num">1.2</span> What CIVITA is not</h3>
 <ul><li>It is not a shared, live, multi-user database. Each person works on their own local copy and then saves or submits. Combining people's work is a deliberate step (Section&nbsp;<a href="#hp-sec-load">9.2</a>), performed by a coordinator.</li><li>It does not read the central database back. Submission is one-way by design; if something you submitted is wrong, the correction goes through the coordinator.</li><li>It is not a PDF library. PDFs are used and then discarded unless you explicitly opt in to caching them (Section&nbsp;<a href="#hp-sec-storage">1.4</a>), and they never leave your browser.</li></ul>
 <h3 id="hp-xs65"><span class="hp-num">1.3</span> What you need</h3>
@@ -3311,7 +3306,15 @@ var inputMode = 'manual';
 // v7: INPUT_MODES is the single source of truth for "which modes exist" — the load
 // whitelist, setInputMode's validation and applyInputMode's class swap all read it, so
 // a fourth mode never again means hunting down scattered two-way branches.
-var INPUT_MODES = ['manual', 'llm', 'webform'];
+// PUBLIC BUILD: AI-assisted ('llm') is deliberately absent from this list. Dropping it here is the
+// single switch that disables the mode: the load whitelist below refuses to restore a saved 'llm'
+// mode, applyInputMode never activates it, and setInputMode('llm') throws loudly rather than
+// silently doing nothing. The UI entry points (landing card, toolbar button) are removed to match,
+// and callAPI/callAPIWithTools refuse to run — see AI_MODE_DISABLED below.
+var INPUT_MODES = ['manual', 'webform'];
+// Enforcement boundary for the line above: any path that still reaches the network layer must fail
+// loudly there instead of falling through to a fetch.
+var AI_MODE_DISABLED = true;
 try { var _im0 = localStorage.getItem('cdb_v5_input_mode'); if (INPUT_MODES.indexOf(_im0) !== -1) inputMode = _im0; } catch (e) {}
 let busy = false;
 var cancelled = false;
@@ -4892,6 +4895,10 @@ function buildVerificationPrompt(figureMeta, axisData, allCurves) {
 
 // ======== API CALL ========
 async function callAPI(base64Data, model, sourceIdPrefix) {
+  // PUBLIC BUILD enforcement boundary: AI-assisted mode is disabled, so no request may leave this
+  // page. Throwing here (before the key is even read) means a missed UI path fails loudly instead
+  // of silently uploading a PDF to a model provider.
+  if (AI_MODE_DISABLED) throw new Error('AI-assisted mode is disabled in this build');
   var apiKey = getActiveApiKey(model);
   if (!apiKey) throw new Error('No API key provided');
 
@@ -5027,6 +5034,8 @@ TOOL_SCHEMAS.method_dispatch = {
 };
 
 async function callAPIWithTools(base64Data, model, promptText, toolSchema, contentType, maxTokens) {
+  // PUBLIC BUILD enforcement boundary — see callAPI. Covers the figure/tool-call path too.
+  if (AI_MODE_DISABLED) throw new Error('AI-assisted mode is disabled in this build');
   var apiKey = getActiveApiKey(model);
   if (!apiKey) throw new Error('No API key provided');
 
@@ -17925,10 +17934,9 @@ try {
 // mode. This runs synchronously before first paint, so there is no control flash.
 try {
   var _bm = document.getElementById('btnModeManual');
-  var _bl = document.getElementById('btnModeLLM');
+  // PUBLIC BUILD: no btnModeLLM handler — the button is gone and setInputMode('llm') now throws.
   var _bw = document.getElementById('btnModeWebform');
   if (_bm) _bm.addEventListener('click', function() { setInputMode('manual'); });
-  if (_bl) _bl.addEventListener('click', function() { setInputMode('llm'); });
   if (_bw) _bw.addEventListener('click', function() { setInputMode('webform'); });
   var _ar = document.getElementById('btnAddRow');
   if (_ar) _ar.addEventListener('click', addManualRow);
