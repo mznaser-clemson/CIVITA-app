@@ -727,9 +727,10 @@ try {
 <div id="dropOverlay">Drop PDF files here</div>
 
 <!-- ======== HIDDEN FILE INPUT ======== -->
-<input type="file" id="fileInput" accept=".pdf" multiple style="display:none">
-<input type="file" id="digitizeInput" accept=".pdf" multiple style="display:none">
-<input type="file" id="mergeInput" accept=".json,application/json" multiple style="display:none">
+<input type="file" id="fileInput" accept=".pdf" style="display:none">
+<input type="file" id="digitizeInput" accept=".pdf" style="display:none">
+<input type="file" id="mergeInput" accept=".json,application/json" style="display:none">
+<input type="file" id="fdpReloadInput" accept=".pdf,application/pdf" style="display:none">
 
 <!-- ======== INPUT-MODE TOGGLE (v5) ======== -->
 <style>
@@ -1490,6 +1491,8 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
       <small>Computational Infrastructure for Validation, Integration, Testing, and Assessment</small>
     </div>
   </div>
+  <button id="btnContributor" title="Your contributor profile. Sets the ID prefix that namespaces all your records so groups' data merges without collisions.">⚠ Set contributor</button>
+  <button id="btnModality" type="button" title="The way of working you chose when CIVITA opened. Click to go back to that choice."></button><span id="buildBadge" class="build-badge"></span>
   <input type="password" id="apiKeyInput" class="llm-only" placeholder="Anthropic API Key">
   <input type="password" id="openaiKeyInput" class="openai-key llm-only" placeholder="OpenAI API Key">
   <select id="modelSelect" class="llm-only">
@@ -1504,24 +1507,22 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
     <option value="gpt-5.4-mini">GPT-5.4 Mini ($0.75/$4.50)</option>
   </select>
   <span class="status-dot idle llm-only" id="statusDot"></span>
-  <button id="btnContributor" title="Your contributor profile. Sets the ID prefix that namespaces all your records so groups' data merges without collisions.">⚠ Set contributor</button><span id="buildBadge" class="build-badge"></span>
-  <button id="btnModality" type="button" title="The way of working you chose when CIVITA opened. Click to go back to that choice."></button>
   <span id="modeToggle" title="Manual: type data directly into the sheet — no AI. Webform: the same data entered one record at a time through a guided form."><button id="btnModeManual" type="button">Manual</button><button id="btnModeWebform" type="button">Webform</button></span>
-  <button id="btnAddRow" title="Add a blank row to the current table for manual entry. Mints a namespaced ID — set your contributor profile first.">+ Add Row</button>
   <button id="btnLoadPdfDigitize" title="Load a PDF to hand-digitize its figures WITHOUT running AI extraction. Adds a source row and loads the PDF; then open the figures tab, Add Row, set the row's source + page, and click the digitize icon to trace curves by hand.">Load PDF (digitize only)</button>
   <button id="btnAddPdfs" class="llm-only">+ Add PDFs</button>
-  <button id="btnValidate" title="Run data-quality checks across all tables: missing required values, out-of-range numbers, and broken links between sources, tests, batches and models. Each row gets a green/yellow/red flag; click a flag to see its issues.">Validate</button>
   <button id="btnAuditSpecimens" class="llm-only" title="Optional completeness check: scans each PDF's own text layer for specimen-ID tokens (e.g. S1, S2, S3) and flags any ID present in the text but missing from the extraction (a possible miss). Covers only the &quot;letters+digits&quot; ID shape; IDs with separators (S-1, UHPC-S1) are skipped, not guessed. Needs the PDF loaded this session (or Remember PDFs on).">Check specimens</button>
   <button id="btnAuditCitations" class="llm-only" title="Optional plausibility check: for every extracted value that cites an explicit page (e.g. &quot;p. 5&quot;), confirms the value AND its unit/label both appear somewhere on that page's text layer. Flags values not found (a possible hallucination or mis-citation) as a yellow review hint -- it never blocks export. Values without an explicit cited page, or on PDFs whose page numbering can't be resolved, are skipped (not flagged). Needs the PDF loaded this session (or Remember PDFs on).">Check citations</button>
   <button id="btnCost" class="llm-only">$</button>
   <label id="rememberPdfsLabel" title="OFF by default. When on, PDFs loaded in this browser (for extraction OR manual digitizing) are kept (IndexedDB) so a page refresh doesn't lose them. Your data is always saved regardless of this setting." style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--c-b8c8dc, #c4c4ce);cursor:pointer;white-space:nowrap;"><input type="checkbox" id="rememberPdfs"> Remember PDFs</label>
   <button id="clearPdfsBtn" title="Delete the PDFs cached in this browser for refresh-recovery. Does NOT touch your data.">Clear cached PDFs</button>
-  <button id="btnSave" title="Save your work. Keeps it in this browser AND downloads a copy as one file (concrete_database.json) that you can load back into CIVITA later.">Save</button>
-  <button id="btnMerge" title="Load a concrete_database.json file you saved earlier, or that a colleague sent you. Its records are ADDED to what is already here -- nothing you have is overwritten or deleted. Loading the same file twice changes nothing. If a record has the same ID but different contents, the whole file is refused rather than quietly overwrite your version. JSON only: no PDFs, no network, no AI.">Load</button>
-  <button id="btnJSON" title="Download the entire database (all tables plus extraction telemetry) as a single concrete_database.json file — a complete machine-readable backup you can re-import or share.">JSON</button>
+  <button id="btnSave" title="Save your work. Keeps it in this browser AND downloads a copy with attachments as one file (concrete_database.json) that you can load back into CIVITA later.">Save</button>
+  <button id="btnMerge" title="Load one source from a concrete_database.json file, restoring records and embedded attachments. A different source requires exporting and clearing the current dataset first. Its records are ADDED to what is already here -- nothing you have is overwritten or deleted. Loading the same file twice changes nothing. If a record has the same ID but different contents, the whole file is refused rather than quietly overwrite your version. JSON only; embedded attachments are restored locally. No network or AI.">Load</button>
+  <button id="btnValidate" title="Run data-quality checks across all tables: missing required values, out-of-range numbers, and broken links between sources, tests, batches and models. Each row gets a green/yellow/red flag; click a flag to see its issues.">Validate</button>
+  <button id="btnPackage" type="button" title="Download dataset JSON, table CSVs, original attachments, imported values, and their record links as one ZIP.">Export</button>
+  <button id="btnLogs">Logs</button>
+  <button id="btnJSON" title="Download the entire database (all tables, uploaded attachments, imported values, and extraction telemetry) as a single concrete_database.json file — a complete machine-readable backup you can re-import or share.">JSON</button>
   <button id="btnCSVs" title="Download each table as its own .csv spreadsheet file.">CSVs</button>
   <button id="btnSubmit" style="background:var(--accent-fill,#0d9488);border-color:var(--accent-dark,#0f766e);color:var(--on-accent,#fff);font-weight:600;" title="Submit your extracted DATA (JSON only — your PDFs never leave this browser) to the committee's central database. Requires a contributor profile. New records are added; records already in the central DB are skipped automatically (idempotent). Reading the central data back is disabled by design; corrections go through the coordinator. Needs network. Hidden until the manager configures the database.">Submit to central DB</button>
-  <button id="btnLogs">Logs</button>
   <button id="btnClear">Clear</button>
   <button id="btnHelp" title="Open the CIVITA v9 manual inside this page: every control, all three input modes, the figure digitizer, the validation rules, the exports and a troubleshooting section. Nothing is downloaded and no network is used.">Help</button>
   <button id="btnTheme" title="Toggle light / dark theme">&#9728; Light</button>
@@ -1636,10 +1637,8 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
 <div id="tableContainer">
   <div id="tableToolbar">
     <button id="btnColumns" type="button" title="Show or hide table columns">&#9881; Columns</button>
-    <!-- Mirror of the top-bar "+ Add Row" so you don't have to scroll up to reach it.
-         It owns no logic: its click forwards to #btnAddRow.click(), so the real button's
-         handler runs unchanged. Shown only in manual mode, via CSS - see note above. -->
-    <button id="btnAddRowInline" type="button" title="Add a blank row to the current table for manual entry. Same as the + Add Row button in the top bar.">+ Add Row</button>
+    <!-- Add records from the table toolbar in manual mode. -->
+    <button id="btnAddRowInline" type="button" title="Add a blank row to the current table for manual entry.">+ Add Row</button>
     <span id="colHiddenNote" class="col-hidden-note"></span>
     <div id="columnPanel" class="column-panel" style="display:none;"></div>
   </div>
@@ -1727,6 +1726,18 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
         </div>
 
         <!-- 1 — Pick the figure -->
+        <details class="fdp-step s1" name="fdpStepAcc" id="fdpStep0">
+          <summary class="fdp-head"><span class="fdp-n">0</span>
+            <span class="fdp-head-text"><span class="fdp-step-title">Reload PDF</span>
+              <span class="fdp-step-sub">Reconnect the source paper for data extraction</span></span>
+            <span class="fdp-badge b-cond">If needed</span>
+          </summary>
+          <div class="fdp-step-body">
+            <p>Choose the original PDF for this figure's source. This reloads the paper without adding a source or deleting saved curve points. Continue to Step 1 to select the figure.</p>
+            <button id="fdpReloadPdf" type="button">Reload PDF</button>
+            <div id="fdpReloadStatus" role="status" class="fdp-hint"></div>
+          </div>
+        </details>
         <details class="fdp-step s1" name="fdpStepAcc" id="fdpStep1" open>
           <summary class="fdp-head"><span class="fdp-n">1</span>
             <span class="fdp-head-text">
@@ -2160,7 +2171,7 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
 <p>The key you paste must match the model family you pick: a Claude model needs the Anthropic key, a GPT model needs the OpenAI key. Choosing a GPT model with only an Anthropic key set is the single most common setup mistake (Section&nbsp;<a href="#hp-ts-keys">10.2</a>).</p>
 <p class="hp-tip"><b>Tip.</b> Run two or three representative papers on the expensive model and the same papers on a cheap one, and compare the flags. If the cheap model's output needs twice the correction time, it was not cheaper.</p>
 <h3 id="hp-xs602"><span class="hp-num">5.3</span> Stage your PDFs</h3>
-<p>Click <b class="hp-btn">+ Add PDFs</b> and select one or more files. The staging panel lists them with four controls:</p>
+<p>Click <b class="hp-btn">+ Add PDFs</b> and select one PDF. Only one source is allowed in the working dataset. Export and Clear before starting a different paper. The staging panel lists the file with four controls:</p>
 <dl><dt><b class="hp-btn">Instant</b></dt><dd>Extract now, synchronously, at full price. You watch the progress bar and have results in minutes.</dd><dt><b class="hp-btn">Batch (50% off, &lt;24h)</b></dt><dd>Submit the same work as a provider-side batch job at half price. It usually finishes in minutes, but the provider only guarantees 24 hours.</dd><dt><b class="hp-btn">+ Add more</b></dt><dd>Add further files to the same staging set.</dd><dt><b class="hp-btn">Clear</b></dt><dd>Empty the staging list without extracting anything.</dd></dl>
 <h3 id="hp-xs616"><span class="hp-num">5.4</span> Instant versus Batch</h3>
 <div class="hp-tw"><table><thead><tr><th></th><th><strong>Instant</strong></th><th><strong>Batch</strong></th></tr></thead><tbody><tr><td>Price</td><td>Full</td><td>Half</td></tr><tr><td>Latency</td><td>Minutes, while you watch</td><td>Usually minutes, up to 24 hours</td></tr><tr><td>Interruption</td><td><b class="hp-btn">Cancel</b> stops it</td><td><b class="hp-btn">Cancel</b> stops the polling, but the job keeps running on the provider's side</td></tr><tr><td>Recovery</td><td>Re-stage and re-run</td><td>The job ID is remembered; click <b class="hp-btn">Batch</b> again to resume polling at no extra charge</td></tr><tr><td>Best for</td><td>One or two papers, or anything you need now</td><td>A corpus of ten or more papers</td></tr></tbody></table></div>
@@ -2215,6 +2226,8 @@ body.skin-instrument #btnHdrMore, body.skin-vitrine #btnHdrMore {
 <p>Open it from the <span class="hp-tab">Figures</span> tab: the digitize control on a figure's grid row, or the <b class="hp-btn">Digitize</b> button on a figure's webform card. Press <span class="hp-sf">Esc</span> at any time to close it; that is the only keyboard shortcut in the application.</p>
 <p>The window is split: the source page or crop on the left, and on the right a live reconstruction of whatever points you have extracted so far, plotted in real data coordinates. Agreement between those two panes is your accuracy check &mdash; if the reconstruction does not look like the original, something upstream is wrong. A zoom slider (50&ndash;400%), <b class="hp-btn">+</b> / <b class="hp-btn">&minus;</b> buttons and <b class="hp-btn">Reset view</b> sit under the source pane, together with a <b class="hp-btn">PDF page</b> stepper whose arrows walk through the pages of the source PDF and reload the one you land on; <b class="hp-btn">Show source under reconstruction</b>, with its own opacity slider, fades the original in behind the reconstructed plot so you can compare them directly; <b class="hp-btn">Undo</b> steps back through your actions; the arrows in the header move to the previous or next figure without leaving the digitizer, and <b class="hp-btn">Close</b> exits.</p>
 <p>The sidebar walks through five steps.</p>
+<h3>Step 0 &mdash; Reload PDF</h3>
+<p>If the source paper is missing after loading saved data or refreshing, open Step 0 in the digitizer and select the original PDF. It reconnects to the existing Source ID and preserves curve points. Only one source is allowed per working dataset; export your work and Clear before switching papers.</p>
 <h3 id="hp-xs881"><span class="hp-num">7.2</span> Step 1 &mdash; Pick the figure</h3>
 <p>The digitizer needs a crop containing exactly one plot.</p>
 <p><b class="hp-btn">Pick Region on Full Page</b> lets you drag a rectangle around the figure on the rendered page. Use it whenever the automatic crop grabbed the wrong thing, caught two stacked panels at once, or cut off an axis.</p>
@@ -2519,7 +2532,7 @@ const VOCABS = {
   hydration_accelerator_type_list: ['hydration_accelerator_unspecified','calcium_chloride','non_chloride_accelerator','calcium_nitrate','calcium_formate','triethanolamine','sodium_thiocyanate','sodium_nitrate','aluminate_based','silicate_based','carbonate_based','alkali_based','shotcrete_accelerator','set_accelerating_admixture','hardening_accelerating_admixture','other','unknown'],
   hygral_boundary_condition_list: ['sealed','unsealed','unknown'],
   image_type_list: ['crack_detail','crack_pattern','deformation','failure','field_map','figure_plot','instrumentation','microstructure','specimen','table_image','test_setup','other','unknown'],
-  loading_control_variable_list: ['CMOD','displacement','load','strain','stress','other','unknown'],
+  loading_control_variable_list: ['CMOD','CTOD','displacement','load','strain','stress','other','unknown'],
   loading_mode_list: ['cyclic','dynamic','impulsive','monotonic','random','reversed_cyclic','other','unknown'],
   material_class_list: ['cement_paste','engineered_cementitious_composites','fiber_reinforced_concrete','heavyweight_concrete','high_performance_concrete','lightweight_concrete','mortar','normal_weight_concrete','ultra_high_performance_concrete','other'],
   observed_mechanism_list: ['bond | bond_slip_and_debonding','bond | steel_concrete_interaction','chemical | degree_of_reaction','chemical | ion_concentration','chemical | mass_loss','chemical | material_reactivity','chemical | microstructure_morphology','chemical | phase_assemblage','chemical | pore_structure','durability | alkali_silica_reaction','durability | carbonation','durability | carbonation_depth','durability | chloride_content','durability | chloride_penetration','durability | corrosion_current','durability | corrosion_probability','durability | freeze_thaw_damage','durability | length_change_expansion','durability | mass_loss','durability | permeability','durability | pore_structure_evolution','durability | sulfate_attack_expansion','elastic | linear_elasticity','fiber | fiber_bridging_and_pull_out_resistance','fiber | post_cracking_residual_strength','fracture | fracture_energy_dissipation','fracture | fracture_propagation','fracture | mixed_mode_dilatancy','fracture | mode_I','fracture | mode_II','fracture | mode_III','fracture | parallel_stress_effect','fracture | initiation','fresh | air_entrainment','fresh | density_and_consistency','fresh | rheology_evolution','fresh | segregation_and_stability','fresh | setting','fresh | setting_and_early_age_stiffening','fresh | spread_diameter','fresh | workability','fresh | rheology','frp | bond','ndt | surface_hardness_rebound_response','ndt | wave_propagation_velocity','stiffness | bending_stiffness','stiffness | crack_width','stiffness | dynamic_response','stiffness | natural_frequency','stiffness | tension_stiffening','stiffness | time_dependent_deflection','stiffness | time_dependent_strain','strength | aggregate_interlock','strength | axial_capacity','strength | bending_capacity','strength | biaxial_failure','strength | bond_slip','strength | cohesion_adhesion','strength | compressive_strain_hardening','strength | concrete_cone_breakout','strength | concrete_cone_failure','strength | creep_buckling','strength | dowel_action','strength | ductility','strength | energy_dissipation','strength | failure_mode','strength | impact_resistance','strength | shear_fracture','strength | multiaxial_failure','strength | pozzolan_reactivity','strength | seismic_response','strength | shear_friction','strength | slag_reactivity','strength | slab_column_connection_failure','strength | crushing_failure','strength | tensile_failure','strength | tensile_strength','strength | torsion_capacity','strength | unconfined_compressive_failure','strength | vertex_effect','thermal | adiabatic_temperature_rise','thermal | heat_capacity','thermal | heat_evolution','thermal | linear_thermal_expansion','thermal | thermal_diffusivity','time_dependent | autogenous_shrinkage','time_dependent | creep','time_dependent | drying_shrinkage','time_dependent | maturity','transport | absorption_and_porosity','transport | chloride_diffusion','transport | electrical_resistivity','transport | gas_permeability','transport | sorptivity','transport | water_permeability','other'],
@@ -2537,7 +2550,7 @@ const VOCABS = {
   test_parameters_list: ['bending_span','shear_span','axial_eccentricity','other'],
   test_type_list: ['accelerated_carbonation_test','axial_test','biaxial_compression_test','blast_test','chloride_profile_grinding','concrete_pullout_bond_test','corrosion_damaged_beam_test','creep_axial_compression_test','creep_bending_test','cyclic_lateral_test','direct_tensile_test','double_punch_test','drop_weight_impact_test','eccentric_axial_compression_test','electrical_resistivity_test','expansion_measurement','fiber_pullout_test','flow_through_leaching_test','four_point_bending_test','fully_adiabatic_calorimetry_test','gas_permeability_test','gap_test','hammer_test','heat_evolution_test','heat_of_hydration_test','hydrostatic_test','ICP_analysis_test','immersion_in_acid_test','immersion_in_deionized_water_test','interface_shear_transfer_test','length_change_test','linear_polarization_resistance_LPR','mercury_intrusion_porosimetry_test','mini_slump_test','modulus_of_rupture_test','noru_mohammed_test','nuclear_magnetic_resonance_test','punching_shear_test','rate_of_absorption_of_water_test','reactivity_of_scm_test','rebound_number_test','rotational_rheometry_test','scanning_electron_microscopy_test','scaling_resistance_test','semi_adiabatic_calorimetry_test','shear_friction_test','slump_flow_test','slump_test','splitting_tensile_test','surface_resistivity_test','tension_chord_test','thermal_diffusivity_test','thermogravimetric_analysis_test','three_point_bending_test','time_of_setting_test','torsion_compression_test','torsion_test','triaxial_test','true_triaxial_test','ultrasonic_pulse_velocity_test','uniaxial_strain_test','unconfined_compression_test','v_funnel_test','vane_shear_test','water_penetration_test','wedge_splitting_test','XRD_Rietveld_analysis_test','AASHTO_T325','AASHTO_T336','AC434','ASTM_A944/A944M','ASTM_C1074','ASTM_C1152','ASTM_C1202','ASTM_C1218','ASTM_C1260','ASTM_C1293','ASTM_C138/C138M','ASTM_C143/C143M','ASTM_C1556','ASTM_C157/C157M','ASTM_C1585','ASTM_C1609/C1609M','ASTM_C1611/C1611M','ASTM_C1679','ASTM_C1702','ASTM_C173/C173M','ASTM_C1876','ASTM_C1897','ASTM_C191','ASTM_C231/C231M','ASTM_C293/C293M','ASTM_C311','ASTM_C39/C39M','ASTM_C403/C403M','ASTM_C469/C469M','ASTM_C496/C496M','ASTM_C512/C512M','ASTM_C531','ASTM_C597','ASTM_C642','ASTM_C666/C666M','ASTM_C672/C672M','ASTM_C78/C78M','ASTM_C7957/D7957M','ASTM_C805/C805M','ASTM_D7958/D7958M','ASTM_D8337/D8337M','EN_12350-2','EN_12350-6','EN_12350-7','EN_12350-8','EN_12350-9','EN_12390-13','EN_12390-16','EN_12390-17','EN_12390-3','EN_12390-6','EN_12390-8','EN_12504-2','EN_12504-4','EN_14630','EN_14651','NT_Build_492','RILEM_RC6','RILEM_TC_162-TDF','RILEM_TC_50-FMC','USACE_CRD-C124','USACE_CRD-C36','USACE_CRD-C39-81'],
   thermal_boundary_condition_list: ['insulated','uninsulated','unknown'],
-  units_type_list: ['%','permille','vol_percent','ppm','ppb','unitless','dimensionless','not_applicable','unknown','true_false','count','counts','cycles','0_255','microstrain','nm','um','mm','cm','dm','m','km','in','ft','yd','px','um_pixel','mm_pixel','dpi','ppi','mm2','cm2','m2','in2','ft2','mm3','cm3','m3','mL','L','in3','ft3','m4','mm4','cm4','in4','rad','mrad','deg','ns','us','ms','s','min','h','day','week','month','year','unix_timestamp','ISO8601','yyyy-mm-dd','yyyy-mm-dd_hh-mm-ss','Hz','kHz','MHz','GHz','rad_s','ug','mg','g','kg','ton','lb','slug','mol','mmol','umol','mN','N','kN','MN','lbf','kip','N_mm','N_m','kN_mm','kN_m','MN_m','lbf_ft','kip_ft','N_s','kN_s','N_s_mm','kN_s_mm','N_s_m','kN_s_m','Pa','kPa','MPa','GPa','bar','atm','psi','ksi','N_mm2','kN_mm2','N_m2','kN_m2','MN_m2','MPa_sqrt_m','ksi_sqrt_in','MPa_s','GPa_s','MPa_per_s','GPa_per_s','1_s','1_min','1_h','1_day','1_year','1_mm','1_m','1_N','1_K','1_GPa','mm_s','cm_s','m_s','km_s','km_h','in_s','ft_s','fps','mm_s2','cm_s2','m_s2','g_acceleration','kg_m3','g_cm3','Mg_m3','lb_ft3','g_mm3','kg_L','degC','K','F','delta_C','delta_K','delta_F','kg_kg','g_g','kg_m','kg_m2','kg_s','kg_min','kg_h','kg_m_s','kg_m2_s','m3_kg','cm3_g','mL_g','L_kg','m2_kg','mol_L','mmol_L','mol_m3','mmol_m3','kg_mol','g_mol','mg_L','g_L','pH','mJ','J','kJ','MJ','aJ','fJ','pJ','Wh','kWh','BTU','cal','kcal','J_g','J_kgK','kJ_kg','kJ_kgK','cal_gC','J_K','kJ_K','J_m3','kJ_m3','MJ_m3','J_m2','J_mm2','N_mm_mm2','kN_mm_mm2','N_m_m2','kN_m_m2','mW','W','kW','MW','hp','W_m2','kW_m2','W_mK','mW_mmK','m2K_W','m2_s','mm2_s','Pa_s','mPa_s','cP','cSt','darcy','mm_sqrt_s','mm_sqrt_h','m_sqrt_s','S_m','mS_cm','ohm','kohm','Mohm','ohm_m','ohm_cm','kohm_cm','uV','mV','V','kV','uA','mA','A','kA','A_m2','C_electric','mC','Ah','pF','nF','uF','F_electric','uH','mH','H','T','mT','gauss','Wb','Gy','mGy','Sv','lux','dB','L_s','L_min','m3_s','m3_h','mm_N','m_N','mm_mm','m_m','percent_per_day','percent_per_year','microstrain_per_s','microstrain_per_day','HV','HB','HRC','USD','EUR','GBP','JPY','CNY','kg_CO2e','ton_CO2e','eco_points','mm_year','um_year','kbps','Mbps','Gbps'],
+  units_type_list: ['-','%','permille','vol_percent','ppm','ppb','unitless','dimensionless','not_applicable','unknown','true_false','count','counts','cycles','0_255','microstrain','nm','um','mm','cm','dm','m','km','in','ft','yd','px','um_pixel','mm_pixel','dpi','ppi','mm2','cm2','m2','in2','ft2','mm3','cm3','m3','mL','L','in3','ft3','m4','mm4','cm4','in4','rad','mrad','deg','ns','us','ms','s','min','h','day','week','month','year','unix_timestamp','ISO8601','yyyy-mm-dd','yyyy-mm-dd_hh-mm-ss','Hz','kHz','MHz','GHz','rad_s','ug','mg','g','kg','ton','lb','slug','mol','mmol','umol','mN','N','kN','MN','lbf','kip','N_mm','N_m','kN_mm','kN_m','MN_m','lbf_ft','kip_ft','N_s','kN_s','N_s_mm','kN_s_mm','N_s_m','kN_s_m','Pa','kPa','MPa','GPa','bar','atm','psi','ksi','N_mm2','kN_mm2','N_m2','kN_m2','MN_m2','MPa_sqrt_m','ksi_sqrt_in','MPa_s','GPa_s','MPa_per_s','GPa_per_s','1_s','1_min','1_h','1_day','1_year','1_mm','1_m','1_N','1_K','1_GPa','mm_s','cm_s','m_s','km_s','km_h','in_s','ft_s','fps','mm_s2','cm_s2','m_s2','g_acceleration','kg_m3','g_cm3','Mg_m3','lb_ft3','g_mm3','kg_L','degC','K','F','delta_C','delta_K','delta_F','kg_kg','g_g','kg_m','kg_m2','kg_s','kg_min','kg_h','kg_m_s','kg_m2_s','m3_kg','cm3_g','mL_g','L_kg','m2_kg','mol_L','mmol_L','mol_m3','mmol_m3','kg_mol','g_mol','mg_L','g_L','pH','mJ','J','kJ','MJ','aJ','fJ','pJ','Wh','kWh','BTU','cal','kcal','J_g','J_kgK','kJ_kg','kJ_kgK','cal_gC','J_K','kJ_K','J_m3','kJ_m3','MJ_m3','J_m2','J_mm2','N_mm_mm2','kN_mm_mm2','N_m_m2','kN_m_m2','mW','W','kW','MW','hp','W_m2','kW_m2','W_mK','mW_mmK','m2K_W','m2_s','mm2_s','Pa_s','mPa_s','cP','cSt','darcy','mm_sqrt_s','mm_sqrt_h','m_sqrt_s','S_m','mS_cm','ohm','kohm','Mohm','ohm_m','ohm_cm','kohm_cm','uV','mV','V','kV','uA','mA','A','kA','A_m2','C_electric','mC','Ah','pF','nF','uF','F_electric','uH','mH','H','T','mT','gauss','Wb','Gy','mGy','Sv','lux','dB','L_s','L_min','m3_s','m3_h','mm_N','m_N','mm_mm','m_m','percent_per_day','percent_per_year','microstrain_per_s','microstrain_per_day','HV','HB','HRC','USD','EUR','GBP','JPY','CNY','kg_CO2e','ton_CO2e','eco_points','mm_year','um_year','kbps','Mbps','Gbps'],
   water_reducer_type_list: ['water_reducer_unspecified','normal_range_water_reducer','mid_range_water_reducer','set_retarding_water_reducer','set_accelerating_water_reducer','lignosulfonate','hydroxycarboxylic_acid','carbohydrate_based','other','unknown'],
   yes_no_list: ['yes','no','unknown'],
 
@@ -3530,6 +3543,7 @@ function escapeHtml(str) {
 }
 
 function sanitizeCSV(val) {
+  if (val === '-') return val; // Literal no-units marker; cannot be a formula.
   // Anti-CSV-injection guard: prepend "'" to values a spreadsheet could interpret as a formula
   // when a CSV is opened directly (=, +, -, @, tab, CR). But a plain numeric literal (incl. a
   // leading -/+ sign, decimals, scientific notation) is NOT a formula — prefixing it corrupts
@@ -3580,7 +3594,7 @@ function cdbIdNamespace() {
 // affordance manual entry needs is a way to create a blank row (today rows are
 // only born from the extraction pipeline). AI-assisted mode is v4's behavior.
 function updateAddRowVisibility() {
-  var btn = document.getElementById('btnAddRow');
+  var btn = document.getElementById('btnAddRowInline');
   if (!btn) return;
   // Visible only in manual mode AND only on tabs backed by a data-table schema.
   btn.style.display = (inputMode === 'manual' && TABLE_SCHEMAS[activeTab]) ? '' : 'none';
@@ -3727,14 +3741,31 @@ function deleteRecordWithCascade(capturedTab, capturedRecord) {
   renderTable();
 }
 
-// Manual mode: load one or more PDFs for hand-digitizing WITHOUT any LLM call.
+// Manual mode: load one source PDF for hand-digitizing WITHOUT any LLM call.
 // Mirrors the extraction path's source-side plumbing exactly (mint a namespaced
 // SRC id, create a real literature_sources row, put the bytes in pdfStore + the
 // opt-in IDB cache) but runs NO model extraction. The user then adds figure rows
 // (source_id + page) and digitizes by hand — the digitizer renders full pages
 // straight from pdfStore, so no stored crop is needed. (v5)
+function singleSourceError(database, incoming) {
+  var rows = (database.literature_sources || []).concat(incoming ? incoming.literature_sources || [] : []);
+  var ids = new Set(rows.map(function(row) { return row.source_id || ''; }));
+  if ((database.literature_sources || []).length > 1 || (incoming && (incoming.literature_sources || []).length > 1) || ids.size > 1) {
+    return 'Only one source is allowed in the working dataset. Export your work first, then remove other sources or Clear before loading another paper.';
+  }
+  return '';
+}
+function canLoadNewSource(files) {
+  if (!files || files.length !== 1) { alert('Choose one source file at a time.'); return false; }
+  if ((db.literature_sources || []).length) {
+    alert('A source is already loaded. To reconnect its PDF, use Figures > Digitize > Step 0: Reload PDF. To work on a different paper, Export your work, then Clear first.');
+    return false;
+  }
+  return true;
+}
 async function loadPdfForDigitize(files) {
   if (!files || !files.length) return;
+  if (!canLoadNewSource(files)) return;
   // nextId THROWS without a contributor profile; prompt first (same gate as extract).
   if (!requireContributor()) return;
   // R4-P2: participate in the busy mutex. loadPdfForDigitize awaits fileToBase64; without this a
@@ -3796,6 +3827,7 @@ async function loadPdfForDigitize(files) {
 }
 
 function nextId(prefix) {
+  if (prefix === 'SRC' && (db.literature_sources || []).length) throw new Error('Only one source is allowed. Export your work and Clear before creating another source. Reload the existing PDF from Step 0 in the figure digitizer.');
   // Enforcement boundary (L-005 / P1-BOUNDARY-001): every ID MUST carry the
   // contributor namespace AND the per-dataset token, or a cross-group (or
   // cross-machine / post-Clear-All) JSON merge silently cross-links records.
@@ -7920,7 +7952,7 @@ var DATA_SHARED_FIELDS = ['data_id', 'source_id', 'test_id', 'test_repeat_id', '
 var DATA_TYPE_FIELDS = {
   scalar: ['device_id', 'quantity_reported', 'quantity_reported_type',
     'quantity_reported_mean', 'quantity_reported_standard_deviation', 'units'],
-  curve: ['units', 'x_device_id', 'y_device_id', 'x_quantity_reported',
+  curve: ['x_device_id', 'y_device_id', 'x_quantity_reported',
     'x_quantity_reported_type', 'y_quantity_reported', 'y_quantity_reported_type', 'file_name'],
   table: ['table_name', 'table_description', 'table_file_name', 'name',
     'description', 'type', 'format', 'filename']
@@ -8094,6 +8126,8 @@ async function recordFileStore(action, key, file) {
       var tx = connection.transaction('files', action === 'get' ? 'readonly' : 'readwrite');
       var store = tx.objectStore('files');
       var req = action === 'put' ? store.put(file, key) : action === 'delete' ? store.delete(key) : store.get(key);
+      // Replacing/removing an original file invalidates parsed values in the same transaction.
+      if (action !== 'get' && !String(key).endsWith(':import')) store.delete(key + ':import');
       tx.oncomplete = function() { resolve(req.result); };
       tx.onerror = function() { reject(tx.error || new Error('File storage failed')); };
       tx.onabort = function() { reject(tx.error || new Error('File storage was interrupted')); };
@@ -8111,13 +8145,16 @@ function buildFileUpload(tab, record, fieldName) {
   status.style.fontSize = '12px';
   var note = document.createElement('div');
   note.style.fontSize = '12px';
-  note.textContent = 'Stored in this browser only. Files are not included in Save, JSON/CSV exports, or Submit.';
+  note.textContent = 'Save and JSON embed files and imported values. Export package also provides separate files. CSVs and Submit do not include attachments. Read values from CSV, TSV, or JSON; save Excel sheets as CSV first.';
   var download = document.createElement('button');
   download.type = 'button';
   download.textContent = 'Download file';
   var remove = document.createElement('button');
   remove.type = 'button';
   remove.textContent = 'Remove file';
+  var read = document.createElement('button');
+  read.type = 'button'; read.textContent = 'Read / import values'; read.disabled = true;
+  read.onclick = function() { openAttachmentImport(tab, record, fieldName, attached); };
   download.disabled = remove.disabled = true;
   var attached = null;
   var key = recordFileKey(tab, record, fieldName);
@@ -8125,18 +8162,22 @@ function buildFileUpload(tab, record, fieldName) {
     attached = file || null;
     status.textContent = file ? file.name + ' (' + file.size.toLocaleString() + ' bytes)' : 'No file attached';
     download.disabled = remove.disabled = !file;
+    read.disabled = !file || !/\.(csv|tsv|json)$/i.test(file.name);
   }
   picker.disabled = true;
   if (key) {
     recordFileStore('get', key).then(function(file) {
       show(file);
       picker.disabled = false;
+      recordFileStore('get', key + ':import').then(function(parsed) {
+        if (parsed) status.textContent += ' ? ' + parsed.rows.length + ' imported rows (' + parsed.kind + ')';
+      }).catch(function(error) { status.textContent += ' ? Cannot read imported values: ' + error.message; });
     }).catch(function(error) { status.textContent = 'Cannot load attachment: ' + error.message; });
   } else { status.textContent = 'Assign a record ID before attaching a file.'; }
   picker.onchange = async function() {
     var file = picker.files[0];
     if (!file) return;
-    picker.disabled = download.disabled = remove.disabled = true;
+    picker.disabled = download.disabled = remove.disabled = read.disabled = true;
     status.textContent = 'Saving file...';
     try {
       await recordFileStore('put', key, file);
@@ -8163,7 +8204,7 @@ function buildFileUpload(tab, record, fieldName) {
     setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
   };
   remove.onclick = async function() {
-    picker.disabled = download.disabled = remove.disabled = true;
+    picker.disabled = download.disabled = remove.disabled = read.disabled = true;
     try {
       await recordFileStore('delete', key);
       if (attached && record[fieldName] === attached.name) record[fieldName] = '';
@@ -8178,9 +8219,379 @@ function buildFileUpload(tab, record, fieldName) {
   wrap.appendChild(status);
   wrap.appendChild(download);
   wrap.appendChild(remove);
+  wrap.appendChild(read);
   wrap.appendChild(note);
   return wrap;
 }
+
+// ======== ATTACHMENT IMPORT AND PACKAGE EXPORT ========
+function attachmentParse(text, filename) {
+  text = text.replace(/^\uFEFF/, '');
+  var matrix;
+  if (/\.json$/i.test(filename)) {
+    var value = JSON.parse(text);
+    if (value && !Array.isArray(value) && Array.isArray(value.rows)) value = value.rows;
+    if (!Array.isArray(value) || !value.length || value.some(function(row) {
+      return !row || typeof row !== 'object' || Array.isArray(row);
+    })) throw new Error('JSON must contain an array of row objects, or {"rows": [...]} .');
+    var headers = Array.from(new Set(value.reduce(function(keys, row) { return keys.concat(Object.keys(row)); }, [])));
+    matrix = [headers].concat(value.map(function(row) {
+      return headers.map(function(key) {
+        var cell = row[key];
+        if (cell != null && typeof cell === 'object') throw new Error('Nested JSON values are not supported. Use flat row objects.');
+        return cell == null ? '' : String(cell);
+      });
+    }));
+  } else {
+    var delimiter = /\.tsv$/i.test(filename) ? '\t' : ',';
+    matrix = []; var row = [], cell = '', quoted = false, closed = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (quoted) {
+        if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (c === '"') { quoted = false; closed = true; }
+        else cell += c;
+      } else if (c === delimiter || c === '\n' || c === '\r') {
+        row.push(cell); cell = ''; closed = false;
+        if (c !== delimiter) {
+          matrix.push(row); row = [];
+          if (c === '\r' && text[i + 1] === '\n') i++;
+        }
+      } else if (c === '"' && cell === '' && !closed) quoted = true;
+      else {
+        if (closed || c === '"') throw new Error('Malformed CSV quoting near character ' + (i + 1));
+        cell += c;
+      }
+    }
+    if (quoted) throw new Error('Unclosed quoted CSV field.');
+    if (cell !== '' || row.length || closed) { row.push(cell); matrix.push(row); }
+  }
+  matrix = matrix.filter(function(row) { return row.some(function(cell) { return String(cell).trim() !== ''; }); });
+  if (matrix.length < 2) throw new Error('Include a header row and at least one data row.');
+  var names = matrix.shift().map(function(name) { return String(name).trim(); });
+  if (names.some(function(name) { return !name; }) || new Set(names).size !== names.length) throw new Error('Column headers must be nonempty and unique.');
+  matrix.forEach(function(row, i) { if (row.length !== names.length) throw new Error('Row ' + (i + 2) + ' has a different number of columns.'); });
+  return { headers: names, rows: matrix };
+}
+function attachmentNumeric(value) {
+  if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(String(value).trim())) throw new Error('Expected a numeric measurement, received "' + value + '".');
+  var n = Number(value);
+  if (!Number.isFinite(n)) throw new Error('Measurement is outside the supported numeric range.');
+  return n;
+}
+function attachmentUnits(value) {
+  var units = String(value == null ? '' : value).trim();
+  return /^(?:N\/A|-)$/i.test(units) ? '-' : units;
+}
+function attachmentCurveUnits(parsed, x, y) {
+  var first = parsed.rows[0];
+  if (!first) return null;
+  var units = [attachmentUnits(first[x]), attachmentUnits(first[y])];
+  return units.every(function(unit) {
+    return unit === '-' || (VOCABS.units_type_list || []).indexOf(unit) !== -1;
+  }) ? units : null;
+}
+function attachmentCurve(parsed, x, y) {
+  if (x === y || x < 0 || y < 0) throw new Error('Choose different X and Y columns.');
+  var offset = attachmentCurveUnits(parsed, x, y) ? 1 : 0;
+  if (parsed.rows.length <= offset) throw new Error('Include at least one numeric curve point after the units row.');
+  return parsed.rows.slice(offset).map(function(row, i) {
+    try { return [attachmentNumeric(row[x]), attachmentNumeric(row[y])]; }
+    catch (e) { throw new Error('Row ' + (i + offset + 2) + ': ' + e.message); }
+  });
+}
+function attachmentMappedRows(parsed, mapping, template) {
+  var mapped = mapping.filter(function(name) { return name; });
+  if (!mapped.length) throw new Error('Map at least one column.');
+  if (new Set(mapped).size !== mapped.length) throw new Error('Each destination field may be mapped only once.');
+  return parsed.rows.map(function(values, index) {
+    var row = {};
+    TABLE_SCHEMAS.data.fields.forEach(function(field) { row[field.name] = ''; });
+    ['source_id', 'test_id', 'test_repeat_id'].forEach(function(key) { row[key] = template[key] || ''; });
+    row.data_type = template.data_type || 'scalar';
+    mapping.forEach(function(name, i) {
+      if (!name) return;
+      var field = TABLE_SCHEMAS.data.fields.find(function(f) { return f.name === name && f.type !== 'id'; });
+      if (!field) throw new Error('Unknown or protected destination field: ' + name);
+      var val = name === 'units' ? attachmentUnits(values[i]) : values[i];
+      if (val && field.type === 'vocab' && (VOCABS[field.vocab] || []).indexOf(val) < 0) throw new Error('Row ' + (index + 2) + ': invalid ' + name + ' value "' + val + '".');
+      row[name] = val;
+    });
+    ['quantity_reported_mean', 'quantity_reported_standard_deviation', 'number_of_specimens'].forEach(function(key) {
+      if (row[key] !== '') attachmentNumeric(row[key]);
+    });
+    if (!db.literature_sources.some(function(source) { return source.source_id === row.source_id; })) throw new Error('Row ' + (index + 2) + ': select an existing Source ID.');
+    var test = db.tests.find(function(test) { return test.test_id === row.test_id; });
+    if (!test || test.source_id !== row.source_id) throw new Error('Row ' + (index + 2) + ': Test ID must belong to the selected source.');
+    if (row.test_repeat_id) {
+      var repeat = /^TRP(\d{4,})$/.exec(row.test_repeat_id);
+      if (!repeat || Number(repeat[1]) < 1 || Number(repeat[1]) > dataTestRepeatCount(row)) throw new Error('Row ' + (index + 2) + ': Test Repeat ID is outside the test repeat count.');
+    }
+    return row;
+  });
+}
+async function openAttachmentImport(tab, record, fieldName, file) {
+  if (!file || !/\.(csv|tsv|json)$/i.test(file.name)) return;
+  if (file.size > 10 * 1024 * 1024) { alert('For value import, use a CSV/TSV/JSON file of 10 MB or less. The original file can still be packaged.'); return; }
+  var parsed;
+  try { parsed = attachmentParse(await file.text(), file.name); }
+  catch (e) { alert('Cannot read values: ' + e.message); return; }
+  var dialog = document.createElement('dialog');
+  dialog.style.cssText = 'width:min(900px,90vw);max-height:85vh;overflow:auto;padding:24px;background:var(--bg,#171923);color:var(--text,#eee);border:1px solid #888;border-radius:10px';
+  function add(tag, text, parent) { var el = document.createElement(tag); if (text != null) el.textContent = text; (parent || dialog).appendChild(el); return el; }
+  add('h2', 'Import values: ' + file.name);
+  add('p', parsed.rows.length + ' rows. Preview below shows the first 10 rows and 12 columns. Existing Data records are never overwritten.');
+  var preview = add('div'); preview.style.overflow = 'auto';
+  var table = add('table', null, preview); var head = add('tr', null, table);
+  parsed.headers.slice(0, 12).forEach(function(h) { add('th', h, head); });
+  parsed.rows.slice(0, 10).forEach(function(row) { var tr = add('tr', null, table); row.slice(0, 12).forEach(function(v) { add('td', v, tr); }); });
+  var modeLabel = add('label', 'Import as '); var mode = add('select', null, modeLabel);
+  [['records', 'New Data records (map columns)'], ['curve', 'Curve X/Y points'], ['table', 'Table contents']].forEach(function(pair) {
+    if (tab !== 'data' && pair[0] !== 'table') return;
+    if (tab === 'data' && pair[0] === 'curve' && record.data_type !== 'curve') return;
+    if (tab === 'data' && pair[0] === 'table' && record.data_type !== 'table') return;
+    var opt = add('option', pair[1], mode); opt.value = pair[0];
+  });
+  mode.value = tab !== 'data' || record.data_type === 'table' ? 'table' : record.data_type === 'curve' ? 'curve' : 'records';
+  var settings = add('div'); var selectors = [], xSelect, ySelect, xUnits, yUnits, defaultType;
+  function columnSelect(label, initial) {
+    var lab = add('label', label + ' ', settings); lab.style.display = 'block';
+    var sel = add('select', null, lab);
+    parsed.headers.forEach(function(h, i) { var opt = add('option', h, sel); opt.value = String(i); }); sel.value = String(initial); return sel;
+  }
+  function drawSettings() {
+    settings.innerHTML = ''; selectors = [];
+    if (mode.value === 'records') {
+      add('p', 'Creates new records; Source, Test, and Repeat IDs default to the attached Data record. IDs are generated automatically. Unmapped columns stay in the original attachment.', settings);
+      var typeLabel = add('label', 'Default Data Type ', settings);
+      defaultType = add('select', null, typeLabel);
+      ['scalar', 'curve', 'table'].forEach(function(type) { var opt = add('option', humanizeLabel(type), defaultType); opt.value = type; });
+      defaultType.value = 'scalar';
+      parsed.headers.forEach(function(header) {
+        var label = add('label', header + ' → ', settings); label.style.display = 'block';
+        var sel = add('select', null, label); var skip = add('option', 'Do not import', sel); skip.value = '';
+        TABLE_SCHEMAS.data.fields.filter(function(f) { return f.type !== 'id'; }).forEach(function(f) {
+          var opt = add('option', humanizeLabel(f.name), sel); opt.value = f.name;
+          if (f.name.toLowerCase() === header.toLowerCase() || humanizeLabel(f.name).toLowerCase() === header.toLowerCase()) opt.selected = true;
+        }); selectors.push(sel);
+      });
+    } else if (mode.value === 'curve') {
+      add('p', 'Stores every X/Y point with this Data record. A first row of recognized units is read as axis units. N/A or - means no units and is stored as -. Set quantity names on the Data record; edit axis units below.', settings);
+      xSelect = columnSelect('X column', 0); ySelect = columnSelect('Y column', Math.min(1, parsed.headers.length - 1));
+      var xl = add('label', 'X units ', settings); xUnits = add('input', null, xl);
+      var yl = add('label', 'Y units ', settings); yUnits = add('input', null, yl);
+      function readAxisUnits() {
+        var units = attachmentCurveUnits(parsed, Number(xSelect.value), Number(ySelect.value));
+        xUnits.value = units ? units[0] : ''; yUnits.value = units ? units[1] : '';
+      }
+      xSelect.onchange = ySelect.onchange = readAxisUnits;
+      readAxisUnits();
+    } else add('p', 'Stores all columns and rows as a linked table. The package includes the original file, parsed JSON, and a spreadsheet-safe CSV.', settings);
+  }
+  mode.onchange = drawSettings; drawSettings();
+  var error = add('p', ''); error.setAttribute('role', 'status');
+  var apply = add('button', 'Confirm import'); apply.type = 'button';
+  var cancel = add('button', 'Cancel'); cancel.type = 'button'; cancel.onclick = function() { dialog.close(); };
+  dialog.addEventListener('close', function() { dialog.remove(); });
+  dialog.addEventListener('cancel', function(event) { if (apply.disabled) event.preventDefault(); });
+  apply.onclick = async function() {
+    apply.disabled = true; cancel.disabled = true;
+    try {
+      if (!(db[tab] || []).includes(record)) throw new Error('The parent record no longer exists.');
+      var result = { kind: mode.value, file_name: file.name, imported_at: new Date().toISOString(), headers: parsed.headers, rows: parsed.rows };
+      if (mode.value === 'records') {
+        var rows = attachmentMappedRows(parsed, selectors.map(function(sel) { return sel.value; }), Object.assign({}, record, { data_type: defaultType.value }));
+        rows.forEach(function(row) { row.data_id = nextId('DAT'); });
+        var previousLength = db.data.length;
+        rows.forEach(function(row) { db.data.push(row); });
+        if (!saveState()) { db.data.splice(previousLength); saveState(); throw new Error('Import cancelled because browser data storage failed.'); }
+        result.created_data_ids = rows.map(function(row) { return row.data_id; });
+        // The records are already durable; a provenance-store failure is reported separately.
+        try { await recordFileStore('put', recordFileKey(tab, record, fieldName) + ':import', result); }
+        catch (e) { alert('Data records were imported, but the linked import preview could not be saved: ' + e.message); }
+      } else {
+        if (mode.value === 'curve') {
+          result.headers = [parsed.headers[Number(xSelect.value)], parsed.headers[Number(ySelect.value)]];
+          result.rows = attachmentCurve(parsed, Number(xSelect.value), Number(ySelect.value));
+          result.x_units = attachmentUnits(xUnits.value); result.y_units = attachmentUnits(yUnits.value);
+        }
+        await recordFileStore('put', recordFileKey(tab, record, fieldName) + ':import', result);
+      }
+      renderTable(); dialog.close();
+      alert(mode.value === 'records' ? 'Imported ' + result.created_data_ids.length + ' new Data records. Use Validate to review them.' : 'Imported ' + result.rows.length + ' rows. Use Export package to download the values and original file.');
+    } catch (e) { error.textContent = e.message; }
+    finally { apply.disabled = false; cancel.disabled = false; }
+  };
+  document.body.appendChild(dialog); dialog.showModal();
+}
+function attachmentCSV(headers, rows) {
+  return '\uFEFF' + [headers].concat(rows).map(function(row) {
+    return row.map(function(value) { return '"' + sanitizeCSV(String(value == null ? '' : value)).replace(/"/g, '""') + '"'; }).join(',');
+  }).join('\r\n') + '\r\n';
+}
+// ZIP STORE format: no network dependency, preserves original bytes; intentionally uncompressed.
+function attachmentZip(entries) {
+  var encoder = new TextEncoder(), parts = [], central = [], offset = 0;
+  function crc(bytes) { var n = 0xffffffff; for (var b of bytes) { n ^= b; for (var k = 0; k < 8; k++) n = (n >>> 1) ^ ((n & 1) ? 0xedb88320 : 0); } return (n ^ 0xffffffff) >>> 0; }
+  entries.forEach(function(entry) {
+    var name = encoder.encode(entry.name), bytes = entry.bytes, checksum = crc(bytes);
+    if (offset + bytes.length + name.length + 30 > 0xffffffff || name.length > 65535) throw new Error('Package exceeds ZIP size limits.');
+    var local = new Uint8Array(30), lv = new DataView(local.buffer);
+    lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x800, true); lv.setUint16(12, 33, true);
+    lv.setUint32(14, checksum, true); lv.setUint32(18, bytes.length, true); lv.setUint32(22, bytes.length, true); lv.setUint16(26, name.length, true);
+    var cd = new Uint8Array(46), cv = new DataView(cd.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0x800, true); cv.setUint16(14, 33, true);
+    cv.setUint32(16, checksum, true); cv.setUint32(20, bytes.length, true); cv.setUint32(24, bytes.length, true); cv.setUint16(28, name.length, true); cv.setUint32(42, offset, true);
+    parts.push(local, name, bytes); central.push(cd, name); offset += local.length + name.length + bytes.length;
+  });
+  var centralSize = central.reduce(function(n, bytes) { return n + bytes.length; }, 0);
+  if (entries.length > 65535 || offset + centralSize > 0xffffffff) throw new Error('Package exceeds ZIP size limits.');
+  var end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, entries.length, true); ev.setUint16(10, entries.length, true); ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true);
+  return new Blob(parts.concat(central, [end]), { type: 'application/zip' });
+}
+function attachmentSafeName(name) { return String(name).replace(/[^a-zA-Z0-9._-]/g, '_').replace(/^\.+/, '_').slice(0, 100) || 'file'; }
+async function attachmentBase64(file) {
+  var bytes = new Uint8Array(await file.arrayBuffer()), chunks = [];
+  for (var i = 0; i < bytes.length; i += 32768) chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 32768)));
+  return btoa(chunks.join(''));
+}
+async function buildSelfContainedJSON(snapshot, readFile) {
+  var output = Object.assign({}, snapshot, { attachment_format_version: 1, attachments: [], missing_attachments: [] });
+  for (var tab of Object.keys(ATTACHMENT_FIELDS)) {
+    for (var row of snapshot.db[tab] || []) {
+      for (var field of ATTACHMENT_FIELDS[tab]) {
+        var key = recordFileKey(tab, row, field);
+        var entry = { table: tab, record_id: row[TABLE_SCHEMAS[tab].id] || '', field: field, recorded_filename: row[field] || '' };
+        if (!key) { if (row[field]) output.missing_attachments.push(entry); continue; }
+        var file = await readFile('get', key), imported = await readFile('get', key + ':import');
+        if (!file && row[field]) output.missing_attachments.push(entry);
+        if (!file && !imported) continue;
+        entry.file = file ? { name: file.name, type: file.type || '', size: file.size, last_modified: file.lastModified || 0, encoding: 'base64', content_base64: await attachmentBase64(file) } : null;
+        entry.imported_data = imported || null;
+        output.attachments.push(entry);
+      }
+    }
+  }
+  return output;
+}
+function decodeEmbeddedAttachments(payload) {
+  if (payload.attachments === undefined) return []; // Legacy exports remain loadable.
+  if (payload.attachment_format_version !== 1 || !Array.isArray(payload.attachments)) throw new Error('Unsupported embedded attachment format.');
+  var seen = new Set();
+  return payload.attachments.map(function(entry) {
+    if (!entry || !hasFileAttachment(entry.table, entry.field)) throw new Error('Unknown attachment table or field.');
+    var row = (payload.db[entry.table] || []).find(function(row) { return row[TABLE_SCHEMAS[entry.table].id] === entry.record_id; });
+    if (!row) throw new Error('Attachment has no matching record: ' + entry.record_id);
+    var key = recordFileKey(entry.table, row, entry.field);
+    if (!key || seen.has(key)) throw new Error('Duplicate or missing attachment record ID.');
+    seen.add(key);
+    var file = null;
+    if (entry.file) {
+      var f = entry.file;
+      if (typeof f.name !== 'string' || typeof f.type !== 'string' || f.encoding !== 'base64' || typeof f.content_base64 !== 'string' || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(f.content_base64)) throw new Error('Invalid embedded file: ' + entry.record_id);
+      var binary = atob(f.content_base64);
+      if (binary.length !== f.size) throw new Error('Embedded file size does not match: ' + f.name);
+      var bytes = Uint8Array.from(binary, function(c) { return c.charCodeAt(0); });
+      file = new File([bytes], f.name, { type: f.type, lastModified: Number(f.last_modified) || 0 });
+    }
+    var parsed = entry.imported_data;
+    if (parsed != null && (!Array.isArray(parsed.headers) || !Array.isArray(parsed.rows) || parsed.headers.some(function(h) { return typeof h !== 'string'; }) || parsed.rows.some(function(row) { return !Array.isArray(row) || row.length !== parsed.headers.length || row.some(function(v) { return v !== null && typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean'; }); }))) throw new Error('Invalid imported table values.');
+    return { key: key, file: file, parsed: parsed || null };
+  });
+}
+async function planEmbeddedRestore(entries, readFile) {
+  var writes = new Map();
+  for (var entry of entries) {
+    for (var pair of [[entry.key, entry.file], [entry.key + ':import', entry.parsed]]) {
+      var key = pair[0], value = pair[1];
+      if (!value) continue;
+      var existing = writes.has(key) ? writes.get(key) : await readFile('get', key);
+      if (existing) {
+        var same = key.endsWith(':import') ? JSON.stringify(existing) === JSON.stringify(value)
+          : existing.name === value.name && existing.type === value.type && await attachmentBase64(existing) === await attachmentBase64(value);
+        if (!same) throw new Error('A different attachment or imported table already exists for ' + key + '. Existing files were preserved.');
+      } else writes.set(key, value);
+    }
+  }
+  return writes;
+}
+async function restoreEmbeddedAttachments(entries) {
+  if (!entries.length) return;
+  var writes = await planEmbeddedRestore(entries, recordFileStore);
+  if (!writes.size) return;
+  var connection = await new Promise(function(resolve, reject) {
+    var request = indexedDB.open('civita_geometry_files', 1);
+    request.onupgradeneeded = function() { request.result.createObjectStore('files'); };
+    request.onsuccess = function() { resolve(request.result); };
+    request.onerror = function() { reject(request.error); };
+  });
+  try {
+    await new Promise(function(resolve, reject) {
+      var tx = connection.transaction('files', 'readwrite'), store = tx.objectStore('files');
+      // Add, never overwrite: a concurrent attachment addition aborts this whole transaction.
+      writes.forEach(function(value, key) { store.add(value, key); });
+      tx.oncomplete = resolve;
+      tx.onerror = tx.onabort = function() { reject(tx.error || new Error('Attachment restore failed')); };
+    });
+  } finally { connection.close(); }
+}
+async function buildAttachmentPackage(snapshot, readFile) {
+  var encoder = new TextEncoder(), entries = [], manifest = { version: 1, created_at: new Date().toISOString(), attachments: [], missing_files: [] };
+  function textEntry(name, text) { entries.push({ name: name, bytes: encoder.encode(text) }); }
+  var cached = new Map(), sourceRead = readFile;
+  readFile = async function(action, key) { if (!cached.has(key)) cached.set(key, await sourceRead(action, key)); return cached.get(key); };
+  var completeJSON = await buildSelfContainedJSON(snapshot, readFile);
+  textEntry('concrete_database.json', JSON.stringify(completeJSON, null, 2));
+  Object.keys(TABLE_SCHEMAS).forEach(function(tab) {
+    var headers = TABLE_SCHEMAS[tab].fields.map(function(f) { return f.name; });
+    textEntry('tables/' + tab + '.csv', attachmentCSV(headers, (snapshot.db[tab] || []).map(function(row) { return headers.map(function(h) { return row[h]; }); })));
+  });
+  var serial = 0;
+  for (var tab of Object.keys(ATTACHMENT_FIELDS)) {
+    for (var row of snapshot.db[tab] || []) {
+      for (var field of ATTACHMENT_FIELDS[tab]) {
+        var key = recordFileKey(tab, row, field);
+        if (!key) { if (row[field]) manifest.missing_files.push({ table: tab, field: field, filename: row[field], reason: 'No record ID' }); continue; }
+        var file = await readFile('get', key);
+        var imported = await readFile('get', key + ':import');
+        var link = { table: tab, record_id: row[TABLE_SCHEMAS[tab].id], field: field, recorded_filename: row[field] || '' };
+        if (!file) { if (row[field]) manifest.missing_files.push(Object.assign({}, link, { reason: 'File is not attached in this browser' })); }
+        if (!file && !imported) continue;
+        var folder = 'attachments/' + String(++serial).padStart(4, '0') + '/';
+        if (file) {
+          link.path = folder + 'original/' + attachmentSafeName(file.name); link.original_filename = file.name; link.size = file.size;
+          entries.push({ name: link.path, bytes: new Uint8Array(await file.arrayBuffer()) });
+        }
+        if (imported) {
+          link.imported_json = folder + 'values/parsed.json'; link.imported_csv = folder + 'values/parsed.csv';
+          textEntry(link.imported_json, JSON.stringify(imported, null, 2));
+          textEntry(link.imported_csv, attachmentCSV(imported.headers, imported.rows));
+        }
+        manifest.attachments.push(link);
+      }
+    }
+  }
+  textEntry('manifest.json', JSON.stringify(manifest, null, 2));
+  textEntry('README.txt', 'CIVITA package\r\nconcrete_database.json: load this file through CIVITA Load.\r\ntables/: spreadsheet-safe CSVs with original record IDs matching the manifest (not the separately reconciled canonical CSV export).\r\nattachments/: original files and imported values. manifest.json links files to records and reports missing attachments.\r\nJSON preserves raw values; CSVs escape spreadsheet formulas.\r\nThe JSON embeds original files and imported values: Load it to restore records and attachments. ZIP loading is not supported.\r\nThis package does not submit files to the central database or include the separate PDF cache.\r\n');
+  return { blob: attachmentZip(entries), manifest: manifest };
+}
+async function exportAttachmentPackage() {
+  var btn = document.getElementById('btnPackage');
+  if (btn.disabled || !egressL005Guard()) return;
+  btn.disabled = true; btn.textContent = 'Packaging...';
+  try {
+    var snapshot = JSON.parse(JSON.stringify({ db: db, extraction_telemetry: extractionTelemetry, policy_gate: policyGate }));
+    var result = await buildAttachmentPackage(snapshot, recordFileStore);
+    if (result.manifest.missing_files.length && !confirm(result.manifest.missing_files.length + ' referenced files are not attached in this browser. They are listed in manifest.json. Download the available data and files?')) return;
+    var url = URL.createObjectURL(result.blob), link = document.createElement('a');
+    link.href = url; link.download = 'CIVITA-package.zip'; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    logMsg('Exported package with ' + result.manifest.attachments.length + ' attachment entries.');
+  } catch (e) { alert('Package export failed: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Export'; }
+}
+// ======== END ATTACHMENT IMPORT AND PACKAGE EXPORT ========
 
 // Build one labelled control. Returns the .wf-field wrapper.
 function wfBuildField(tab, schema, record, field) {
@@ -8807,7 +9218,13 @@ function renderStagingPanel() {
   }
 }
 
+var sourceStageInFlight = false;
 async function stageFiles(files) {
+  if (sourceStageInFlight || busy) { alert('Wait for the current file operation to finish.'); return; }
+  if (!canLoadNewSource(files)) return;
+  if (stagedFiles.length) { alert('One source is already staged. Process it or clear the staged file first.'); return; }
+  sourceStageInFlight = true;
+  try {
   for (var i = 0; i < files.length; i++) {
     var file = files[i];
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
@@ -8822,6 +9239,7 @@ async function stageFiles(files) {
     }
   }
   renderStagingPanel();
+  } finally { sourceStageInFlight = false; }
 }
 
 // ======== PROCESSING PIPELINE ========
@@ -8881,6 +9299,7 @@ async function processBatch() {
     }
   } catch (pbErr) { resumePending = null; }
   if (!resumePending && stagedFiles.length === 0) { alert('No files staged.'); return; }
+  if (!canLoadNewSource(resumePending ? resumePending.names : stagedFiles)) return;
   if (!requireContributor()) return;
 
   busy = true;
@@ -9457,6 +9876,7 @@ async function processBatch() {
 // --- Instant Processing (full price, immediate) ---
 // skipGuards=true when called as batch fallback (busy flag already set)
 async function processExtraction(skipGuards) {
+  if (!canLoadNewSource(stagedFiles)) return;
   if (!skipGuards) {
     if (busy) { alert('Already processing. Please wait.'); return; }
     var apiKey = getActiveApiKey();
@@ -9850,54 +10270,38 @@ function egressL005Guard() {
     'Fix the red-flagged duplicates first, or click OK to export the flagged dataset anyway.');
 }
 
-function exportJSON() {
-  if (!egressL005Guard()) return;
-  var data = JSON.stringify({ db: db, extraction_telemetry: extractionTelemetry, policy_gate: policyGate }, null, 2);
-  var blob = new Blob([data], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'concrete_database.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  logMsg('Exported JSON');
+var jsonExportInFlight = false;
+async function exportJSON() {
+  if (jsonExportInFlight || !egressL005Guard()) return false;
+  jsonExportInFlight = true;
+  try {
+    var snapshot = JSON.parse(JSON.stringify({ db: db, extraction_telemetry: extractionTelemetry, policy_gate: policyGate }));
+    var output = await buildSelfContainedJSON(snapshot, recordFileStore);
+    if (output.missing_attachments.length && !confirm(output.missing_attachments.length + ' referenced files are unavailable in this browser. Download the available data? Missing files will be listed inside the JSON.')) return false;
+    var blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = 'concrete_database.json';
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    logMsg('Exported self-contained JSON with ' + output.attachments.length + ' attachments.');
+    return true;
+  } catch (e) {
+    alert('JSON export failed: ' + e.message + '. No file was downloaded.');
+    return false;
+  } finally { jsonExportInFlight = false; }
 }
 
-// v8: ONE button replaces the JSON and CSVs downloads. "Save" means both halves at once --
-// commit to this browser AND hand the user a file. The downloaded payload is byte-identical
-// to the old JSON export, because that shape is exactly what the merge/import path reads
-// back. Do not change this object without changing the reader.
-function saveWork() {
+// Save keeps the working dataset locally and downloads data plus embedded attachments.
+async function saveWork() {
+  if (jsonExportInFlight) return;
   var storedOk = saveState();
-  // The L-005 duplicate-join-key gate fails CLOSED on export. The browser save already
-  // happened, so say so -- a bare "blocked" here reads as "my work is gone".
-  if (!egressL005Guard()) {
-    // v8: say what actually happened to the browser copy -- saveState() can fail (quota, private
-    // mode), and "IS saved" on top of a failed store is the one message that must never be wrong.
-    alert((storedOk
-      ? 'Your work IS saved in this browser, but the file was not downloaded -- the check above stopped it.'
-      : 'WARNING: your work could NOT be stored in this browser (see the earlier alert) AND the file was not downloaded -- the check above stopped it.') +
-      '\n\nFix the flagged rows, then click Save again to get your file.');
+  if (!await exportJSON()) {
+    logMsg(storedOk ? 'Data saved in this browser; JSON download did not complete.' : 'Browser save and JSON download did not complete.');
     return;
   }
-  var data = JSON.stringify({ db: db, extraction_telemetry: extractionTelemetry, policy_gate: policyGate }, null, 2);
-  var url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'concrete_database.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  logMsg(storedOk
-    ? 'Save: stored in this browser and downloaded concrete_database.json'
-    : 'Save: downloaded concrete_database.json, but the browser store FAILED (see the alert)');
   var btn = document.getElementById('btnSave');
   if (btn) {
-    btn.classList.add('saved');
-    btn.textContent = storedOk ? 'Saved ✓' : 'Downloaded ✓';
+    btn.classList.add('saved'); btn.textContent = storedOk ? 'Saved' : 'Downloaded';
     setTimeout(function() { btn.classList.remove('saved'); btn.textContent = 'Save'; }, 2200);
   }
 }
@@ -10556,6 +10960,7 @@ function cdbReadFileAsText(file) {
 // surface in an alert. Operates on JSON only -- no PDFs, no network.
 async function runMergeImport(files) {
   if (!files || !files.length) return;
+  if (files.length !== 1) { alert('Load one source JSON file at a time.'); return; }
   // R3-1: block merge while a run is in flight. cdbMergeMany deep-clones the db and this
   // function swaps `db = res.db`, replacing every row object. An in-flight
   // processMultiPassFigures holds live db.figures references and mutates them in place across
@@ -10564,7 +10969,7 @@ async function runMergeImport(files) {
   // Sibling snapshot-then-clobber paths (fileInput handler, clearAll) guard the same way.
   if (busy) { alert('Processing in progress — finish or cancel the run before merging.'); var mi = document.getElementById('mergeInput'); if (mi) mi.value = ''; return; }
   var pkMap = cdbTablePrimaryKeys();
-  var incoming = [];
+  var incoming = [], embeddedAttachments = [];
   for (var i = 0; i < files.length; i++) {
     var file = files[i];
     var text;
@@ -10575,6 +10980,10 @@ async function runMergeImport(files) {
     catch (e) { alert('Merge aborted: "' + file.name + '" is not valid JSON (' + e.message + '). Nothing was imported.'); return; }
     var cleanDb = cdbSanitizeImportedDb(parsed, pkMap);
     if (!cleanDb) { alert('Merge aborted: "' + file.name + '" has no "db" section (not a concrete_database.json export). Nothing was imported.'); return; }
+    try { embeddedAttachments = embeddedAttachments.concat(decodeEmbeddedAttachments(parsed)); }
+    catch (e) { alert('Load aborted: ' + e.message + '. Nothing was imported.'); return; }
+    var sourceError = singleSourceError(db, cleanDb);
+    if (sourceError) { alert(sourceError + '\nNothing was imported.'); return; }
     incoming.push({ name: file.name, db: cleanDb });
   }
 
@@ -10631,6 +11040,9 @@ async function runMergeImport(files) {
   // counters keep advancing, only the token changes.
   idNamespace = null;
   saveState();
+  var attachmentRestoreError = '';
+  try { await restoreEmbeddedAttachments(embeddedAttachments); }
+  catch (e) { attachmentRestoreError = e.message; }
   renderTable();
   renderValidationSummary();
   validate();
@@ -10638,6 +11050,8 @@ async function runMergeImport(files) {
   var dangling = cdbValidateForeignKeys(db, cdbForeignKeyMap(), pkMap);
   var msg = 'Merged ' + incoming.length + ' file(s).\n\n' +
     res.added + ' new record(s) added, ' + res.duplicates + ' duplicate(s) skipped (idempotent).';
+  if (attachmentRestoreError) msg += '\n\nRecords were loaded, but attachments were NOT restored: ' + attachmentRestoreError + '\nKeep the JSON backup and retry Load after resolving this issue.';
+  else if (embeddedAttachments.length) msg += '\n\n' + embeddedAttachments.length + ' embedded attachment entries restored or already present.';
   if (dangling.length) {
     var dshown = dangling.slice(0, 10).map(function(d) { return d.table + ' ' + d.id + ' -> ' + d.field + '=' + d.value; }).join('\n  ');
     msg += '\n\nWARNING: ' + dangling.length + ' dangling foreign-key reference(s) (a contributing group exported partial data). ' +
@@ -15060,7 +15474,7 @@ async function fdpGoToPage(delta) {
   // v8: check for the PDF BEFORE touching the page box, so a click with no PDF in memory does
   // not leave the readout on a page that was never rendered.
   if (!fig || !fig.source_id || !pdfStore.has(fig.source_id)) {
-    alert('The source PDF is not in memory in this session. Load it again (Load PDF, or drop it on the page) before moving between pages.');
+    alert('The source PDF is not in memory in this session. Use Step 0: Reload PDF before moving between pages.');
     return;
   }
   var cur = Math.max(1, parseInt(inp.value, 10) || (fig ? fdpFigurePhysPage(fig) : 1));
@@ -15430,6 +15844,58 @@ function fdpRestoreCalibration(fig) {
   fdpDrawSource();
 }
 
+function fdpUpdateReloadStatus(fig) {
+  var status = document.getElementById('fdpReloadStatus');
+  var button = document.getElementById('fdpReloadPdf');
+  var linked = fig && (db.literature_sources || []).some(function(source) { return source.source_id === fig.source_id; });
+  if (button) button.disabled = !linked;
+  if (status) status.textContent = !linked ? 'Set this figure\'s Source ID on the Figures tab first.'
+    : pdfStore.has(fig.source_id) ? 'PDF ready: ' + pdfStore.get(fig.source_id).name + ' | Source: ' + fig.source_id
+    : 'No PDF loaded for source ' + fig.source_id + '. Reload the original paper here.';
+}
+async function fdpReloadPdf(files) {
+  if (!files || files.length !== 1) { alert('Choose one PDF to reload.'); return; }
+  var fig = fdpResolveFig();
+  if (!fig || !(db.literature_sources || []).some(function(source) { return source.source_id === fig.source_id; })) { alert('Link this figure to an existing source first.'); return; }
+  var sourceError = singleSourceError(db);
+  if (sourceError) { alert(sourceError); return; }
+  if (busy) { alert('Wait for the current operation to finish before reloading the PDF.'); return; }
+  var file = files[0];
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { alert('Choose a PDF file.'); return; }
+  var generation = fdpState.openGen, sourceId = fig.source_id, figureId = fig.figure_id;
+  var status = document.getElementById('fdpReloadStatus');
+  var button = document.getElementById('fdpReloadPdf');
+  busy = true; button.disabled = true; status.textContent = 'Reading PDF...';
+  try {
+    var base64 = await fileToBase64(file);
+    var pdf = await pdfGetDocument(decodePdfBase64(base64));
+    try {
+      if (fdpFigurePhysPage(fig) > pdf.numPages) throw new Error('This PDF has ' + pdf.numPages + ' pages, fewer than the figure\'s selected page. Check the paper or figure page number.');
+    } finally { await pdf.destroy(); }
+    if (generation !== fdpState.openGen || fdpResolveFig() !== fig || fig.source_id !== sourceId) return;
+    var previous = pdfStore.get(sourceId);
+    var changed = previous && previous.base64 !== base64;
+    if (changed && !confirm('This PDF differs from the currently loaded file. Reload it for this source? Saved curve points will remain, but calibrations will be cleared and must be checked again.')) { fdpUpdateReloadStatus(fig); return; }
+    fdpPersist();
+    pdfStore.set(sourceId, { name: file.name, base64: base64 });
+    db.figures.forEach(function(row) {
+      if (row.source_id !== sourceId) return;
+      figureImageStore.delete(row.figure_id);
+      if (changed) row.calibration_json = '';
+    });
+    saveState();
+    await pdfIdbPut(sourceId, { name: file.name, base64: base64 });
+    if (generation === fdpState.openGen && fdpResolveFig() === fig) await openDigitizer(figureId);
+    logMsg('Reloaded PDF for existing source ' + sourceId + ': ' + file.name);
+  } catch (error) {
+    if (generation === fdpState.openGen) status.textContent = 'PDF reload failed: ' + error.message;
+    alert('PDF reload failed: ' + error.message);
+  } finally {
+    busy = false;
+    var current = fdpResolveFig();
+    button.disabled = !current || !(db.literature_sources || []).some(function(source) { return source.source_id === current.source_id; });
+  }
+}
 async function openDigitizer(figureId) {
   var idx = -1;
   for (var i = 0; i < db.figures.length; i++) {
@@ -15451,16 +15917,18 @@ async function openDigitizer(figureId) {
   fdpState.undoStack = [];
   fdpState.isDragging = false;
 
-  // Every figure starts on step 1. The cards are an exclusive <details name> group and
+  // Figures without a loaded PDF start on Step 0; otherwise start on Step 1. The cards are an exclusive <details name> group and
   // nothing else in the app reopens one, so without this the previously-open step carries
   // over: Next/Prev Figure (fdpGoFig -> openDigitizer) could load a new figure with "Pick
   // the figure" — the required first action — collapsed. Set all three explicitly instead
   // of leaning on native <details name> exclusivity, so the reset is identical in browsers
   // that don't support the name attribute. Mirrors the selection/auto-status resets in
   // fdpClose(); fdpGoFig does NOT call fdpClose(), which is why this lives here.
-  ['fdpStep1', 'fdpStep2', 'fdpStep3'].forEach(function(sid) {
+  var firstStep = pdfStore.has(fig.source_id) ? 'fdpStep1' : 'fdpStep0';
+  fdpUpdateReloadStatus(fig);
+  ['fdpStep0', 'fdpStep1', 'fdpStep2', 'fdpStep3'].forEach(function(sid) {
     var card = document.getElementById(sid);
-    if (card && 'open' in card) card.open = (sid === 'fdpStep1');
+    if (card && 'open' in card) card.open = (sid === firstStep);
   });
 
   $('#fdpFigureId').textContent = figureId;
@@ -17199,6 +17667,7 @@ $('#btnCost').addEventListener('click', function() {
   costPanel.style.display = isHidden ? 'block' : 'none';
 });
 $('#btnSave').addEventListener('click', saveWork);
+$('#btnPackage').addEventListener('click', exportAttachmentPackage);
 $('#btnJSON').addEventListener('click', exportJSON);
 $('#btnCSVs').addEventListener('click', exportCSVs);
 $('#btnMerge').addEventListener('click', function() { $('#mergeInput').click(); });
@@ -17289,7 +17758,7 @@ var HDR_OVERFLOW_ORDER = [
   'btnLoadPdfDigitize', 'btnAuditSpecimens', 'btnAuditCitations',
   'rememberPdfsLabel', 'clearPdfsBtn',
   'btnJSON', 'btnCSVs', 'btnHelp', 'btnLogs', 'btnClear',
-  'btnMerge', 'btnSave', 'btnValidate', 'btnAddPdfs', 'btnAddRow', 'btnCost',
+  'btnMerge', 'btnSave', 'btnPackage', 'btnValidate', 'btnAddPdfs', 'btnCost',
   'btnSubmit', 'btnTheme', 'btnModality', 'btnContributor',
   'modelSelect', 'openaiKeyInput', 'apiKeyInput'
 ];
@@ -17483,8 +17952,8 @@ if ($('#btnHdrMore')) {
 // palette can never offer something the toolbar would refuse.
 var CMDK_ACTIONS = [
   'btnValidate', 'btnAuditSpecimens', 'btnAuditCitations',
-  'btnAddPdfs', 'btnLoadPdfDigitize', 'btnAddRow', 'btnColumns',
-  'btnSave', 'btnMerge', 'btnJSON', 'btnCSVs', 'btnSubmit',
+  'btnAddPdfs', 'btnLoadPdfDigitize', 'btnAddRowInline', 'btnColumns',
+  'btnSave', 'btnPackage', 'btnMerge', 'btnJSON', 'btnCSVs', 'btnSubmit',
   'btnLogs', 'btnHelp', 'btnTheme', 'btnContributor', 'btnModality', 'btnClear'
 ];
 var cmdkItems = [], cmdkHot = 0, cmdkReturnFocus = null;
@@ -17683,6 +18152,20 @@ $('#fdpAddCurve').addEventListener('click', fdpAddCurve);
 $('#fdpExportCurveCSV').addEventListener('click', fdpExportCurveCSV);
 $('#fdpLinkData').addEventListener('click', fdpLinkData);
 $('#fdpRebuildCrop').addEventListener('click', fdpRebuildSourceCrop);
+var fdpReloadTarget = null;
+$('#fdpReloadPdf').addEventListener('click', function() {
+  fdpReloadTarget = { figureId: fdpState.figureId, generation: fdpState.openGen };
+  $('#fdpReloadInput').click();
+});
+$('#fdpReloadInput').addEventListener('change', async function(event) {
+  try {
+    if (!event.target.files.length) return;
+    if (!fdpReloadTarget || fdpReloadTarget.figureId !== fdpState.figureId || fdpReloadTarget.generation !== fdpState.openGen) {
+      alert('The selected figure changed. Click Reload PDF on the current figure again.'); return;
+    }
+    await fdpReloadPdf(Array.from(event.target.files));
+  } finally { event.target.value = ''; fdpReloadTarget = null; }
+});
 $('#fdpAutoDigitize').addEventListener('click', fdpAutoDigitizeCrop);
 $('#fdpVecExtract').addEventListener('click', fdpExtractVectorCurves);
 $('#fdpRasterExtract').addEventListener('click', fdpExtractRasterCurves);
@@ -17882,8 +18365,8 @@ document.addEventListener('dragenter', function(e) {
     // mode has no PDF affordance of its own, so it takes the no-AI path like manual —
     // dropping a paper there still registers the source row the form's dropdowns need.
     ov.textContent = (inputMode === 'llm')
-      ? 'Drop PDF files here to extract'
-      : 'Drop PDF files here to digitize (no AI)';
+      ? 'Drop one PDF here to extract'
+      : 'Drop one PDF here to digitize (no AI)';
     ov.style.display = 'flex';
   }
 });
@@ -17914,6 +18397,7 @@ document.addEventListener('drop', async function(e) {
   var lpDrop = document.getElementById('modalityLanding');
   if (lpDrop && getComputedStyle(lpDrop).display !== 'none') { logMsg('Drop ignored: finish the start page first'); return; }
   var dropped = Array.from(e.dataTransfer.files);
+  if ($('#figDigitizeOverlay').classList.contains('active')) { await fdpReloadPdf(dropped); return; }
   if (inputMode !== 'llm') {
     // Manual mode: load the dropped PDF(s) for hand-digitizing — no extraction.
     await loadPdfForDigitize(dropped);
@@ -17927,6 +18411,7 @@ document.addEventListener('drop', async function(e) {
 
 // ======== INITIALIZATION ========
 loadState();
+if (singleSourceError(db)) setTimeout(function() { alert(singleSourceError(db)); }, 0);
 
 // ======== v8: MODALITY LOCK-IN ========
 // The landing page picks a modality once; from then on the toolbar mode toggle is
@@ -18177,12 +18662,8 @@ try {
   var _bw = document.getElementById('btnModeWebform');
   if (_bm) _bm.addEventListener('click', function() { setInputMode('manual'); });
   if (_bw) _bw.addEventListener('click', function() { setInputMode('webform'); });
-  var _ar = document.getElementById('btnAddRow');
-  if (_ar) _ar.addEventListener('click', addManualRow);
-  // The table-toolbar "+ Add Row" is a pure proxy: forward to the real button rather
-  // than binding addManualRow again, so there is exactly one add-row code path.
   var _ari = document.getElementById('btnAddRowInline');
-  if (_ari && _ar) _ari.addEventListener('click', function() { _ar.click(); });
+  if (_ari) _ari.addEventListener('click', addManualRow);
   // Manual-mode: "Load PDF (digitize only)" opens the hidden picker; its change
   // handler runs the no-LLM load path. Same as drag-drop in manual mode.
   var _lpd = document.getElementById('btnLoadPdfDigitize');
